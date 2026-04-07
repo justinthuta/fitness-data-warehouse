@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables (CRITICAL - keeps passwords safe)
+.env
+config/.env
+
+# Logs (can contain sensitive data)
+logs/
+*.log
+
+# Database files
+*.db
+*.sqlite
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Personal data files
+data/private/
+data/personal/
+
+# Temporary files
+tmp/
+temp/
