@@ -25,7 +25,6 @@ This project implements a 3-tier data warehouse architecture:
 - Modular, scalable design following data engineering best practices
 
 ## Database Schema
-
 ```sql
 -- Core tables for fitness data
 - users: User management and authentication
@@ -37,8 +36,6 @@ This project implements a 3-tier data warehouse architecture:
 ```
 
 ## Project Structure
-
-```
 fitness-data-warehouse/
 ├── src/
 │   ├── database/          # Database connection and schema
@@ -48,45 +45,43 @@ fitness-data-warehouse/
 ├── config/               # Configuration files
 ├── data/                 # Sample datasets
 └── logs/                 # Application logs
-```
 
 ## Setup Instructions
 
 1. **Clone the repository**
-   ```bash
+```bash
    git clone https://github.com/justinthuta/fitness-data-warehouse.git
    cd fitness-data-warehouse
-   ```
+```
 
 2. **Create virtual environment**
-   ```bash
+```bash
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+```
 
 3. **Install dependencies**
-   ```bash
+```bash
    pip install -r requirements.txt
-   ```
+```
 
 4. **Configure database**
-   ```bash
+```bash
    cp config/.env.example config/.env
    # Edit config/.env with your PostgreSQL credentials
-   ```
+```
 
 5. **Initialize database**
-   ```bash
+```bash
    python3 src/database/connection.py
-   ```
+```
 
 6. **Run sample ETL pipeline**
-   ```bash
+```bash
    python3 src/loaders/database_loader.py
-   ```
+```
 
 ## Usage Example
-
 ```python
 # Extract data from CSV
 extractor = CSVExtractor('data/sample_workouts.csv')
@@ -104,11 +99,16 @@ loader.load_activities(clean_data)
 ## Future Enhancements
 
 - [ ] Strava API integration
-- [ ] Fitbit API integration
+- [ ] Garmin Connect API integration
+- [ ] Whoop API integration
+- [ ] COROS API integration
+- [ ] Apple Health integration
+- [ ] MyFitnessPal API integration
 - [ ] Real-time data streaming
-- [ ] Analytics dashboard
-- [ ] Performance metrics calculation
-- [ ] Data visualization components
+- [ ] Analytics dashboard with data visualizations
+- [ ] Performance metrics calculation (training load, recovery scores)
+- [ ] Automated scheduling with Airflow
+- [ ] Cloud deployment (AWS/GCP)
 
 ## Contributing
 
