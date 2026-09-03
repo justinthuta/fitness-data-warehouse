@@ -39,3 +39,5 @@ data/personal/
 # Temporary files
 tmp/
 temp/
+config/strava_tokens.json
+config/.env.save
