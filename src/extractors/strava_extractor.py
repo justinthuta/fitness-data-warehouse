@@ -33,7 +33,8 @@ class StravaExtractor:
             response = requests.get(
                 f'{self.base_url}/athlete/activities',
                 headers=headers,
-                params={'per_page': per_page}
+                params={'per_page': per_page},
+                timeout=30
             )
             
             if response.status_code != 200:
@@ -53,7 +54,8 @@ if __name__ == "__main__":
     extractor = StravaExtractor()
     data = extractor.extract_activities()
     print(f"\nRetrieved {len(data)} activities")
-    print("\nColumns available:")
-    print(list(data.columns))
-    print("\nFirst activity preview:")
-    print(data[['name', 'type', 'start_date', 'distance', 'moving_time']].head())
+    if len(data) > 0:
+        print("\nColumns available:")
+        print(list(data.columns))
+        print("\nFirst activity preview:")
+        print(data[['name', 'type', 'start_date', 'distance', 'moving_time']].head())

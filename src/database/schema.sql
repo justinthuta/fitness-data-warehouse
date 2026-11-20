@@ -11,9 +11,12 @@ CREATE TABLE IF NOT EXISTS users (
 -- Data sources table (tracks where data comes from)
 CREATE TABLE IF NOT EXISTS data_sources (
     source_id SERIAL PRIMARY KEY,
-    source_name VARCHAR(50) NOT NULL,  -- 'strava', 'fitbit', 'myfitnesspal', 'manual'
+    source_name VARCHAR(50) NOT NULL,  -- 'strava', 'fitbit', 'garmin', 'apple_health', 'myfitnesspal', 'manual'
     description TEXT
 );
+
+-- Each source name must be unique (needed for the ON CONFLICT insert below)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_data_sources_name ON data_sources(source_name);
 
 -- Activities table (workouts, runs, rides, etc.)
 CREATE TABLE IF NOT EXISTS activities (
@@ -86,10 +89,11 @@ CREATE TABLE IF NOT EXISTS sleep_logs (
 -- Insert initial data sources
 INSERT INTO data_sources (source_name, description) VALUES 
 ('strava', 'Strava fitness activities'),
-('fitbit', 'Fitbit device data'),
-('myfitnesspal', 'MyFitnessPal nutrition data'),
+('fitbit', 'Google Fitbit device data'),
+('garmin', 'Garmin device data'),
 ('apple_health', 'Apple Health app data'),
-('manual', 'Manually entered data')
+('myfitnesspal', 'MyFitnessPal nutrition tracking'),
+('manual', 'Manually entered data and CSV files')
 ON CONFLICT (source_name) DO NOTHING;
 
 -- Create indexes for better query performance

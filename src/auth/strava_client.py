@@ -12,6 +12,11 @@ TOKEN_FILE = 'config/strava_tokens.json'
 
 def load_tokens():
     """Load saved tokens from local file"""
+    if not os.path.exists(TOKEN_FILE):
+        raise FileNotFoundError(
+            f"{TOKEN_FILE} not found. Connect your Strava account first: "
+            "run python3 src/auth/strava_auth.py, then python3 src/auth/strava_token_exchange.py"
+        )
     with open(TOKEN_FILE, 'r') as f:
         return json.load(f)
 
@@ -40,7 +45,8 @@ def get_valid_access_token():
             'client_secret': CLIENT_SECRET,
             'grant_type': 'refresh_token',
             'refresh_token': tokens['refresh_token']
-        }
+        },
+        timeout=30
     )
     
     if response.status_code == 200:

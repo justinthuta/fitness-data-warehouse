@@ -1,8 +1,21 @@
 # Fitness Data Warehouse
 
-A Python and PostgreSQL ETL pipeline that pulls my fitness data into one database. I wear different devices and use different apps, so my data was scattered. I wanted to see everything in one place.
+A Python and PostgreSQL ETL pipeline that pulls my fitness data into one database. I use several devices and apps, so my data was scattered. I wanted to see everything in one place.
 
-Right now the pipeline works with two sources: **live Strava activities through the Strava API** and **CSV workout files**. More sources are planned (see Roadmap).
+The apps and devices I use: **Strava, Apple Health, Google Fitbit, Garmin and MyFitnessPal** (MyFitnessPal only for nutrition tracking).
+
+Right now the pipeline works with **live Strava activities through the Strava API** and **CSV workout files**. The other sources are planned (see the table below).
+
+## Data sources
+
+| Source | Data | Status |
+| --- | --- | --- |
+| Strava | Activities | Working (Strava API, OAuth 2.0) |
+| CSV files | Workouts | Working |
+| Apple Health | Activities, sleep, body metrics | Planned (reads the export file from the Health app) |
+| Google Fitbit | Activities, sleep | Planned |
+| Garmin | Activities, sleep | Planned |
+| MyFitnessPal | Nutrition only | Planned (goes into `nutrition_logs`) |
 
 ## How it works
 
@@ -38,14 +51,14 @@ Six tables in `src/database/schema.sql`:
 
 | Table | Purpose |
 | --- | --- |
-| `users` | Who the data belongs to |
-| `data_sources` | Where data came from (Strava, manual entry, and so on) |
+| `users` | Who the data belongs to (a default user is created on the first load) |
+| `data_sources` | Where data came from: strava, fitbit, garmin, apple_health, myfitnesspal, manual |
 | `activities` | Workouts, runs and rides with metrics. Unique on source and external ID |
-| `nutrition_logs` | Food intake and macros |
+| `nutrition_logs` | Food intake and macros (for MyFitnessPal) |
 | `body_metrics` | Weight and body composition over time |
 | `sleep_logs` | Sleep duration and quality |
 
-The activities table is fully used by the pipeline today. The nutrition, body metrics and sleep tables are ready for future sources.
+The `activities` table is used by the pipeline today. The nutrition, body metrics and sleep tables are ready for the planned sources.
 
 ## Project structure
 
@@ -58,12 +71,15 @@ fitness-data-warehouse/
 │   ├── transformers/    # strava_transformer.py, workout_transformer.py
 │   ├── loaders/         # database_loader.py
 │   └── pipelines/       # strava_pipeline.py (full Strava ETL run)
+├── tests/               # Unit tests for the transformers
 ├── config/              # .env.example
 ├── data/                # sample_workouts.csv
 └── logs/                # created at runtime
 ```
 
 ## Setup
+
+Run all commands from the project folder.
 
 1. **Clone and enter the project**
 ```bash
@@ -82,10 +98,11 @@ cp config/.env.example config/.env
 ```
 Then edit `config/.env` with your PostgreSQL details. For Strava, create an app at strava.com/settings/api and add your client ID and secret.
 
-4. **Create the database tables**
+4. **Create the database, tables and starter data**
 ```bash
 python3 src/database/connection.py
 ```
+It is safe to run this more than once.
 
 ## Run it
 
@@ -98,31 +115,40 @@ python3 src/loaders/database_loader.py
 ```bash
 python3 src/auth/strava_auth.py
 ```
-Approve access in the browser, copy the `code` from the redirect URL, then run:
+Approve access in the browser. You will land on a page that does not load. That is normal. Copy the whole address from the browser bar, then run:
 ```bash
 python3 src/auth/strava_token_exchange.py
 ```
+and paste it in. It also accepts just the `code` value.
 
 **Strava (pull activities and load them)**
 ```bash
 python3 src/pipelines/strava_pipeline.py
 ```
 
+**Run the tests**
+```bash
+python3 -m unittest discover -s tests
+```
+
 ## Known limitations
 
 * The Strava pull gets the latest 30 activities only. There is no pagination or full history sync yet.
-* The Strava transformer assumes user ID 1 and source ID 1 (Strava) from the seed data.
-* Calories are often missing from the Strava list endpoint, so they are filled with 0.
-* No automated tests yet.
+* Calories are not in the Strava activity list, so they are stored as 0.
+* One default user for now. There is no multi user support.
+* The tests cover the transformers. The database loader is not covered by automated tests yet.
 
 ## Roadmap
 
 - [x] CSV extraction and loading
 - [x] Strava API integration with OAuth 2.0 and automatic token refresh
 - [x] Duplicate detection
+- [x] Unit tests for the transformers
+- [ ] Apple Health export reader
+- [ ] Garmin integration
+- [ ] Google Fitbit integration
+- [ ] MyFitnessPal nutrition tracking
 - [ ] Pagination and full Strava history
-- [ ] Garmin Connect, Whoop, COROS, Apple Health and MyFitnessPal sources
-- [ ] Unit tests
 - [ ] Analytics dashboard
 - [ ] Scheduling with Airflow
 - [ ] Cloud deployment

@@ -1,6 +1,7 @@
 import os
 import psycopg2
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 from dotenv import load_dotenv
 import logging
 
@@ -9,9 +10,9 @@ load_dotenv('config/.env')
 
 class DatabaseConnection:
     def __init__(self):
-        self.host = os.getenv('DB_HOST')
-        self.port = os.getenv('DB_PORT')
-        self.database = os.getenv('DB_NAME')
+        self.host = os.getenv('DB_HOST', 'localhost')
+        self.port = os.getenv('DB_PORT', '5432')
+        self.database = os.getenv('DB_NAME', 'fitness_warehouse')
         self.username = os.getenv('DB_USER')
         self.password = os.getenv('DB_PASSWORD') or ''
         self.logger = self._setup_logger()
@@ -48,8 +49,16 @@ class DatabaseConnection:
     def get_engine(self):
         """Get SQLAlchemy engine"""
         try:
-            connection_string = f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
-            engine = create_engine(connection_string)
+            # URL.create handles special characters (like @ or #) in the password
+            url = URL.create(
+                "postgresql+psycopg2",
+                username=self.username,
+                password=self.password,
+                host=self.host,
+                port=int(self.port),
+                database=self.database
+            )
+            engine = create_engine(url)
             self.logger.info("SQLAlchemy engine created successfully")
             return engine
         except Exception as e:
@@ -121,17 +130,24 @@ class DatabaseConnection:
 
 if __name__ == "__main__":
     db = DatabaseConnection()
-    
+
     print("Testing database connection...")
-    
-    if db.test_connection():
-        print("Database connection successful!")
-    else:
-        print("Database connection failed!")
-        print("\nTrying to setup database...")
+
+    connected = db.test_connection()
+    if not connected:
+        print("Database connection failed. Trying to create the database...")
         if db.setup_database():
-            print("Database setup successful!")
-            if db.test_connection():
-                print("Connection now working!")
-        else:
-            print("Failed to setup database")
+            connected = db.test_connection()
+
+    if not connected:
+        print("Could not connect. Check PostgreSQL is running and config/.env is correct.")
+        raise SystemExit(1)
+
+    print("Database connection successful!")
+
+    print("Creating tables and seed data...")
+    if db.create_tables():
+        print("Done! Tables are ready.")
+    else:
+        print("Failed to create tables. See logs/database.log for details.")
+        raise SystemExit(1)
